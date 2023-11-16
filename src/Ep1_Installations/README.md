@@ -5,14 +5,21 @@
 
 ## Table of Contents
 
-- [Installation](#installation)
+- [Ubuntu](#ubuntu)
+- [Nvidia Driver](#nvidia-driver)
+- [CUDA](#cuda)
+- [Python Env](#python-env)
+- [Olympe](#olympe)
+- [Sphinx](#sphinx)
+- [ROS Noetic](#ros-noetic)
+- [PyTorch and Yolov5](#pytorch-and-yolov5)
 - [Usage](#usage)
-
+- [Issues](#issues)
 
 Please follow the following instructions carefully for setting up your development environment properly. If there are any issues with installations or the codes, simply open a new issue request on the  [github repo](https://github.com/amir-ebram/deep_ros).
 
 
-## Ubuntu 20.04
+## Ubuntu
 
 Install Ubuntu 20.04 dekstop image. Follow instructions on [ubuntu.com](https://releases.ubuntu.com/focal/). You can install it as dual-boot along your Windows but you can't use VM Ware as the GPU is inaccessible over virtual machine.
 
