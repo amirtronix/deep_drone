@@ -50,7 +50,7 @@ wget https://developer.download.nvidia.com/compute/cuda/11.1.0/local_installers/
 sudo sh cuda_11.1.0_455.23.05_linux.run
 ```
 
-![Alt Text](./media/cuda.png)
+![Alt Text](../../media/cuda.png)
 
 
 You need to add cuda path to your .bashrc after installation. Simply:
