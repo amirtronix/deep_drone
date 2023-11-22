@@ -1,7 +1,7 @@
-<?xml version="1.3.0"?>
+<?xml version="1.0"?>
 <package format="2">
   <name>deep_ros</name>
-  <version>0.0.0</version>
+  <version>1.4.0</version>
   <description>The deep_ros package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
