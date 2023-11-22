@@ -1,0 +1,5 @@
+Homework 2:
+
+- Modify sp_ctrl.py and sp_olympe.py code so that you can send takeoff and landing commands with "v" and "c" keyboard commands.
+
+- Remember to fork the repo and add a pull-request so that I could check your code!

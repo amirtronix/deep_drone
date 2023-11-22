@@ -1,0 +1,7 @@
+Homework 1:
+
+- Write a ROS publisher in sp_takeoff.py to publish a string message "Takeoff successful" and 
+"Landing successful" after takeoff and landing.
+
+
+- Remember to fork the repo and add a pull-request so that I could check your code!
