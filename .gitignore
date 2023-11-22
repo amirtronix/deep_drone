@@ -1,4 +1,5 @@
 .vscode/
-
+repo/videos/video*
+repo/frames/20*
 temp.*
-
+user.bash
