@@ -1,6 +1,10 @@
 #!/bin/bash
 
-read -p "Enter the username: " username
+if [ "$#" -eq 1 ]; then
+    username="$1"
+else
+    username=$(whoami)
+fi
 
 if [ -z "$username" ]; then
     echo "Error: Username not provided."
