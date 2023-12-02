@@ -9,6 +9,7 @@ import rospy
 
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import TwistStamped
+from std_msgs.msg import String
 
 import sys
 from select import select
@@ -34,8 +35,9 @@ Controls:
 \to: \t\tRotate Right
 \tt: \t\tUp
 \tb: \t\tDown
-\tt: \t\tTakeoff
 
+\tr: \t\tTakeoff
+\tv: \t\t\Land
 
 anything else : stop
 
@@ -47,12 +49,12 @@ CTRL-C to quit
 """
 
 moveBindings = {
-        'i':(1,0,0,0),
+        'i':(0,1,0,0),
         'o':(0,0,0,-1),
-        'j':(0,1,0,0),
-        'l':(0,-1,0,0),
+        'j':(-1,0,0,0),
+        'l':(1,0,0,0),
         'u':(0,0,0,1),
-        ',':(-1,0,0,0),
+        ',':(0,-1,0,0),
         'm':(-1,0,0,-1),
         't':(0,0,1,0),
         'b':(0,0,-1,0),
@@ -67,10 +69,18 @@ speedBindings={
         'c':(1,.9),
     }
 
+statusBindings={
+        'r':'takeoff',
+        'v':'land',
+    }
+
+
 class PublishThread(threading.Thread):
     def __init__(self, rate):
         super(PublishThread, self).__init__()
         self.publisher = rospy.Publisher('/parrot/cmd_vel', TwistMsg, queue_size = 1)
+        self.publisherTakeoff = rospy.Publisher('/parrot/takeoff', String, queue_size = 10)
+        self.publisherLand = rospy.Publisher('/parrot/land', String, queue_size = 10)
         self.x = 0.0
         self.y = 0.0
         self.z = 0.0
@@ -202,6 +212,9 @@ if __name__=="__main__":
 
     pub_thread = PublishThread(repeat)
 
+    flight_msg = String()
+    flight_msg.data = ""
+
     x = 0
     y = 0
     z = 0
@@ -232,6 +245,12 @@ if __name__=="__main__":
                 if (status == 14):
                     print(msg)
                 status = (status + 1) % 15
+            elif key in statusBindings.keys():
+                flightStatus = statusBindings[key]
+                if flightStatus == "takeoff":
+                    pub_thread.publisherTakeoff.publish(flight_msg)
+                elif flightStatus == "land":
+                    pub_thread.publisherLand.publish(flight_msg)
             else:
                 # Skip updating cmd_vel if key timeout and robot already
                 # stopped.
@@ -250,5 +269,6 @@ if __name__=="__main__":
         print(e)
 
     finally:
+        pub_thread.publisherLand.publish(flight_msg)
         pub_thread.stop()
         restoreTerminalSettings(settings)

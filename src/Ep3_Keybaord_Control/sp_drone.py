@@ -40,8 +40,8 @@ class OlympeBridge():
         self.drone(
             PCMD(
                 1,
-                int(-self.cmd_vel.linear.y),
                 int(self.cmd_vel.linear.x),
+                int(self.cmd_vel.linear.y),
                 int(-self.cmd_vel.angular.z),
                 int(self.cmd_vel.linear.z),
                 timestampAndSeqNum=0,
@@ -59,15 +59,16 @@ class OlympeBridge():
 
 
 def main(args):
-    oleympe_bridge = OlympeBridge()
+    olympe_bridge = OlympeBridge()
 
     while not rospy.is_shutdown():
 
-        oleympe_bridge.run()
-        oleympe_bridge.rate.sleep()
+        olympe_bridge.run()
+        olympe_bridge.rate.sleep()
 
+    assert olympe_bridge.drone(Landing()).wait().success()
+    olympe_bridge.drone.disconnect()
 
-    assert oleympe_bridge.drone(Landing()).wait().success()
     print("Shutting down")
 
 

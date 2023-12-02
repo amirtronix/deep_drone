@@ -4,6 +4,7 @@ import os
 import sys
 import rospy
 from geometry_msgs.msg import Twist
+from std_msgs.msg import String
 import time
 import csv
 import math
@@ -17,6 +18,7 @@ import threading
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 from sensor_msgs.msg import Image
+import signal
 
 
 import olympe
@@ -25,7 +27,6 @@ from olympe.messages.ardrone3.Piloting import TakeOff, Landing, PCMD
 
 DRONE_IP = os.environ.get("DRONE_IP", "10.202.0.1")
 DRONE_RTSP_PORT = os.environ.get("DRONE_RTSP_PORT")
-
 
 class OlympeBridge():
 
@@ -43,9 +44,12 @@ class OlympeBridge():
         self.frame_queue = queue.Queue()
         self.processing_thread = threading.Thread(target=self.yuv_frame_processing)
         self.renderer = None
+        self.hoveringStatus = False
 
 
         rospy.Subscriber('/parrot/cmd_vel', Twist, self.cmd_vel_callback)
+        rospy.Subscriber('/parrot/takeoff', String, self.takeoff_callback)
+        rospy.Subscriber('/parrot/land', String, self.land_callback)
         self.image_pub = rospy.Publisher("/parrot/image_raw",Image, queue_size=10)
 
 
@@ -68,6 +72,7 @@ class OlympeBridge():
             self.drone.streaming.server_addr = f"{DRONE_IP}:{DRONE_RTSP_PORT}"
 
         assert self.drone(TakeOff()).wait().success()
+        self.hoveringStatus = True
 
         # Setup your callback functions to do some live video processing
         self.drone.streaming.set_callbacks(
@@ -97,7 +102,8 @@ class OlympeBridge():
                 cv2frame = cv2.cvtColor(x, self.cv2_cvt_color_flag[yuv_frame.format()]) 
                 cv2.imwrite("/home/accurpress/catkin_ws/src/deep_ros/repo/frames/img_sphinx.jpg", cv2frame)
                 self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv2frame, "bgr8"))
-                print(cv2frame.shape)
+                if self.hoveringStatus:
+                    print(cv2frame.shape)
 
                 
 
@@ -112,7 +118,21 @@ class OlympeBridge():
         self.cmd_vel.linear.x, self.cmd_vel.linear.y, self.cmd_vel.linear.z = [msg.linear.x, msg.linear.y, msg.linear.z]
         self.cmd_vel.angular.x, self.cmd_vel.angular.y, self.cmd_vel.angular.z = [msg.angular.x, msg.angular.y, msg.angular.z]
 
+    def takeoff_callback(self, msg):
+        print("Asserting Takeoff!")
+        assert self.drone(TakeOff()).wait().success()
+        print("Takeoff Successful!")
+        self.hoveringStatus = True
+
+    def land_callback(self, msg):
+        print("Asserting Landing!")
+        assert self.drone(Landing()).wait().success()
+        print("Landing Successful!")
+        self.hoveringStatus = False
+
+
     def run(self):
+
         self.drone(
             PCMD(
                 1,
@@ -125,16 +145,16 @@ class OlympeBridge():
         )
         self.control  = False
 
-        print("x_cmd = ", int(self.cmd_vel.linear.x), end = ' ')
-        print("y_cmd = ", int(self.cmd_vel.linear.y), end = ' ')
-        print("z_cmd = ", int(self.cmd_vel.linear.z), end = ' ')
-        print("Yaw_cmd = ", -int(self.cmd_vel.angular.z))
+        if self.hoveringStatus:
+            print("x_cmd = ", int(self.cmd_vel.linear.x), end = ' ')
+            print("y_cmd = ", int(self.cmd_vel.linear.y), end = ' ')
+            print("z_cmd = ", int(self.cmd_vel.linear.z), end = ' ')
+            print("Yaw_cmd = ", -int(self.cmd_vel.angular.z))
 
         time.sleep(0.05)
 
-
-
 def main(args):
+
     olympe_bridge = OlympeBridge()
     olympe_bridge.start()
 
@@ -143,12 +163,9 @@ def main(args):
         olympe_bridge.run()
         olympe_bridge.rate.sleep()
 
-
     olympe_bridge.drone(Landing())
     print("Shutting down")
-
 
 if __name__ == "__main__":
     main(sys.argv)
 
-    
