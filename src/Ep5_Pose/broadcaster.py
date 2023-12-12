@@ -28,7 +28,6 @@ if __name__ == '__main__':
         pitch = 0
         yaw = 0
 
-
         br.sendTransform((parrot_pose.position.x, parrot_pose.position.y, parrot_pose.position.z),
                      tf.transformations.quaternion_from_euler(0, 0, yaw),
                      rospy.Time.now(),

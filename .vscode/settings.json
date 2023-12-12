@@ -1,14 +1,17 @@
 {
     "python.autoComplete.extraPaths": [
-        "/home/user/catkin_ws/devel/lib/python3/dist-packages",
+        "/home/accurpress/catkin_ws/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
     ],
     "python.analysis.extraPaths": [
-        "/home/user/catkin_ws/devel/lib/python3/dist-packages",
+        "/home/accurpress/catkin_ws/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
     ],
     "terminal.integrated.env.linux": {
         "LD_LIBRARY_PATH": "/opt/parrot-sphinx/usr/lib:${env:LD_LIBRARY_PATH}",
         "PYTHONPATH": "/opt/parrot-sphinx/usr/lib/python/site-packages:${env:PYTHONPATH}"
+    },
+    "files.associations": {
+        "iostream": "cpp"
     }
 }
