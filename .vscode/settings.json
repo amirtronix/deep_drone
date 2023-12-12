@@ -1,10 +1,10 @@
 {
     "python.autoComplete.extraPaths": [
-        "/home/accurpress/catkin_ws/devel/lib/python3/dist-packages",
+        "/home/username/catkin_ws/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
     ],
     "python.analysis.extraPaths": [
-        "/home/accurpress/catkin_ws/devel/lib/python3/dist-packages",
+        "/home/username/catkin_ws/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
     ],
     "terminal.integrated.env.linux": {
