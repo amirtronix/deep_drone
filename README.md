@@ -13,6 +13,12 @@ This package is an extensive tutorial to learn Robotics and Deep Learning at the
 
 
 
+## Installation
+
+For installation, follow the [README](src/Ep1_Installations/README.md) file in first episode.
+
+
+
 ## Sphinx
 
 Please follow the following instructions carefully for setting up your development environment properly. If there are any issues with installations or the codes, simply open a new issue request on the  [github repo](https://github.com/amir-ebram/deep_drone).
