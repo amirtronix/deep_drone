@@ -2,8 +2,6 @@
 
 This package is an extensive tutorial to learn Robotics, Deep Learning and Reinforcement Learning at the same time. Our main focus is to deploy Deep algorithms on a Parrot Anafi drone on its official simulation environemnt, Parrot Sphinx, whihc is based on Unreal Engine 4. 
 
-This is a test!
-
 
 <!-- ![GIF](./repo/frame/test_pursuit_z.gif) -->
 
