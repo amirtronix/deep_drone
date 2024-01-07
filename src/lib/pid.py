@@ -1,4 +1,4 @@
-#!/home/accurpress/parrot/bin/python
+#!/home/username/parrot/bin/python
 from collections import namedtuple
 
 Gains = namedtuple('Gains', 'x, y, z')
