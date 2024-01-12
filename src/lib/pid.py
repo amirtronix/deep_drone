@@ -8,8 +8,6 @@ class Gains:
         self.ki = 0
         self.kd = 0
 
-
-
 class PidController:
     def __init__(self, _gains, _sample_time, _anti_windup=None):
         
