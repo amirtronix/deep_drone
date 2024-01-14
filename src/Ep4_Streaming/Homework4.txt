@@ -1,8 +1,0 @@
-Homework 4:
-
-Add a function in sp_stream.py to annotate the streaming feed with opencv to display 
-received image size with a text on image. You should add annotate_frame  argument to 
-streaming class as "def __init__(self, save_video=False, save_frame=False, annotate_frame=False):
-
-
-- Remember to fork the repo and add a pull-request so that I could check your code!
