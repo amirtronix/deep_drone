@@ -1,15 +1,17 @@
 <launch>
     <arg name="pid_start_time" default="10.0"  /> <!-- Choosing flight time (in seconds) -->
-    <arg name="pulse_mode" default="cmd_pos" /> <!-- Choosing pulse mode (cmd_vel/cmd_pos) -->
-    <arg name="axis" default="x_axis" /> <!-- Choosing pulse axis (x_axis) -->
-    <arg name="pulse_amp" default="0.3" /> <!-- Choosing command value -->
-    <arg name="pulse_width" default="10.0" /> <!-- Choosing command value -->
+    <arg name="pulse_mode" default="cmd_vel" /> <!-- Choosing pulse mode (cmd_vel/cmd_pose) -->
+    <arg name="axis" default="z" /> <!-- Choosing pulse axis x, y, z, yaw -->
+    <arg name="pulse_amp" default="50.0" /> <!-- Choosing command value -->
+    <arg name="pulse_width" default="1" /> <!-- Choosing pulse width -->
+	<arg name="pulse_offset" default="0" /> <!-- Choosing pulse offset -->
     
 	<node pkg="deep_drone" type="sp_pulse.py"  name="pulse_gen_node"  output="screen">
 		<param name="pulse_mode" value="$(arg pulse_mode)" type="str" />
 		<param name="axis" value="$(arg axis)" type="str" />
 		<param name="pulse_amp" value="$(arg pulse_amp)" type="double" />
-		<param name="pulse_width" value="$(arg pulse_width)" type="double" />				
+		<param name="pulse_width" value="$(arg pulse_width)" type="double" />	
+		<param name="pulse_offset" value="$(arg pulse_offset)" type="double" />			
 	</node>
 
 </launch>
