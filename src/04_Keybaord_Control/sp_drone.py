@@ -18,7 +18,7 @@ class OlympeBridge():
 
     def __init__(self):
         rospy.init_node('olympe_bridge_node', anonymous=False)
-        rospy.Subscriber('/parrot/cmd_vel', Twist, self.cmd_vel_callback)
+        rospy.Subscriber('/drone/cmd_vel', Twist, self.cmd_vel_callback)
 
         self.rate = rospy.Rate(10)
 
