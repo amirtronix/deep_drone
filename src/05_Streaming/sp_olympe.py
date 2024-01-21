@@ -47,10 +47,10 @@ class OlympeBridge():
         self.hoveringStatus = False
 
 
-        rospy.Subscriber('/parrot/cmd_vel', Twist, self.cmd_vel_callback)
-        rospy.Subscriber('/parrot/takeoff', String, self.takeoff_callback)
-        rospy.Subscriber('/parrot/land', String, self.land_callback)
-        self.image_pub = rospy.Publisher("/parrot/image_raw",Image, queue_size=10)
+        rospy.Subscriber('/drone/cmd_vel', Twist, self.cmd_vel_callback)
+        rospy.Subscriber('/drone/takeoff', String, self.takeoff_callback)
+        rospy.Subscriber('/drone/land', String, self.land_callback)
+        self.image_pub = rospy.Publisher("/drone/image_raw",Image, queue_size=10)
 
 
         self.bridge = CvBridge()
