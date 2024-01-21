@@ -78,9 +78,9 @@ statusBindings={
 class PublishThread(threading.Thread):
     def __init__(self, rate):
         super(PublishThread, self).__init__()
-        self.publisher = rospy.Publisher('/parrot/cmd_vel', TwistMsg, queue_size = 1)
-        self.publisherTakeoff = rospy.Publisher('/parrot/takeoff', String, queue_size = 10)
-        self.publisherLand = rospy.Publisher('/parrot/land', String, queue_size = 10)
+        self.publisher = rospy.Publisher('/drone/cmd_vel', TwistMsg, queue_size = 1)
+        self.publisherTakeoff = rospy.Publisher('/drone/takeoff', String, queue_size = 10)
+        self.publisherLand = rospy.Publisher('/drone/land', String, queue_size = 10)
         self.x = 0.0
         self.y = 0.0
         self.z = 0.0
