@@ -30,7 +30,7 @@ if __name__ == "__main__":
    
 
     rospack = rospkg.RosPack()
-    workspace_dir = rospack.get_path('deep_ros')
+    workspace_dir = rospack.get_path('deep_drone')
 
     rate=rospy.Rate(ROS_RATE)
 
