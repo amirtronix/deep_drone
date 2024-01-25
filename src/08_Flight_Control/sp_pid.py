@@ -1,11 +1,24 @@
-#!/home/username/parrot/bin/python
+#!/home/accurpress/parrot/bin/python
 
 import sys
 import rospy
 import rospkg
+import threading
+import cv2
 
 import os
 from loguru import logger
+import yaml
+
+rospack = rospkg.RosPack()
+config_path = rospack.get_path('deep_drone') + '/config/param.yaml'
+
+print(config_path)
+
+with open(config_path, 'r') as stream:
+    config = yaml.safe_load(stream)
+
+ROS_RATE = config['ros_rate']
 
 class Gains:
     def __init__(self):
@@ -52,17 +65,49 @@ class PidController:
 
 class FlightController():
     def __init__(self):
-        pass
+        rospy.init_node('flight_controller')
 
+        self.gui_param = GuiThread()
+        self.gui_param.start()
+
+class GuiThread(threading.Thread):
+    def __init__(self, title = "PID GUI", max = 100):
+        super(GuiThread, self).__init__()
+
+        self.title_window = title
+        self.max = max
+
+        self.row_titles= ["kp", "ki", "kd"]
+        self.row_max = [100, 100, 100]
+
+
+    def run(self):
+        cv2.namedWindow(self.title_window)
+
+        for trackbar_name, trackbar_max in zip(self.row_titles, self.row_max):
+            cv2.createTrackbar(trackbar_name, self.title_window , 0, trackbar_max, self.on_trackbar)
+
+        while not rospy.is_shutdown():
+            cv2.waitKey(3)
+            
+    def on_trackbar(self, value):
+        pass
 
 
 def main(args):
 
     flight_controller = FlightController()
+    
+    rate = rospy.Rate(ROS_RATE)
 
     while not rospy.is_shutdown():
-        pass
 
+        t = rospy.get_time()
+
+        rospy.loginfo("Command published!")
+        rate.sleep()
+
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
