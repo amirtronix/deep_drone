@@ -56,7 +56,7 @@ class PulseNode():
         self.pose_signal = Pose() # Command Pose
         self.twist_signal = Twist() # Command Velocity
 
-        self.pose_publisher = rospy.Publisher('/drone/cmd_pose', Pose, queue_size = 10)
+        self.pose_publisher = rospy.Publisher('/drone/cmd_pos', Pose, queue_size = 10)
         self.twist_publisher = rospy.Publisher('/drone/cmd_vel', Twist, queue_size = 10)
 
         self.pulse_generator = PulseGenerator(self.pulse_width, self.pulse_amp, self.pulse_offset)
@@ -67,7 +67,7 @@ class PulseNode():
         print(signal)
 
     def _get_msg(self, signal):
-        if self.pulse_mode == "cmd_pose":
+        if self.pulse_mode == "cmd_pos":
             if self.axis == "x":
                 self.pose_signal.position.x = signal
             elif self.axis == "y":
@@ -99,7 +99,7 @@ class PulseNode():
     def _publish(self, signal):
         msg = self._get_msg(signal)
 
-        if (self.pulse_mode == "cmd_pose") and (msg is not None):
+        if (self.pulse_mode == "cmd_pos") and (msg is not None):
             self.pose_publisher.publish(msg)
         elif (self.pulse_mode == "cmd_vel") and (msg is not None):
             self.twist_publisher.publish(msg)
