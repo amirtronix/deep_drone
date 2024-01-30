@@ -4,6 +4,7 @@ import sys
 import rospy
 import rospkg
 from geometry_msgs.msg import Pose, Twist
+import tf
 
 import threading
 import cv2
@@ -79,6 +80,7 @@ class FlightController():
         self.cmd_zero = Twist()
         self.cmd_vel = Twist()
         self.cmd_pos = Pose()
+        self.drone_pos = Pose()
 
         self.gains = [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]
 
@@ -87,9 +89,11 @@ class FlightController():
         self.pid_z = PidController(self.gains[2], self.sample_time)
         self.pid_yaw = PidController(self.gains[3], self.sample_time)
 
-    def generate_cmd(self):
+    def generate_cmd(self, trans, rot):
         if self._is_topic("/drone/cmd_pos"):
-            errors = self._get_error(1, 2)
+
+            self._get_pos(trans, rot)
+            errors = self._get_error()
 
             self.cmd_vel.linear.x = self.pid_x.compute(errors[0])
             self.cmd_vel.linear.y = self.pid_x.compute(errors[1])
@@ -101,19 +105,49 @@ class FlightController():
         else:
             self.cmd_pub.publish(self.cmd_zero)
 
+    def _get_pos(self, trans, rot):
+        self.drone_pos.position.x = trans[0]
+        self.drone_pos.position.x = trans[1]
+        self.drone_pos.position.x = trans[2]
+
+        self.drone_pos.orientation.x = rot[0]
+        self.drone_pos.orientation.y = rot[1]
+        self.drone_pos.orientation.z = rot[2]
+        self.drone_pos.orientation.w = rot[3]
+
     def _cmd_pos_callback(self, msg: Pose):
         self.cmd_pos.position = msg.position
         self.cmd_pos.orientation = msg.orientation
 
-    def _get_error(self, setpoint, pose):
-        #TODO Adding /tf listener
-        return [5, 5, 5, 5]
+    def _get_error(self):
+        error_x = self.cmd_pos.position.x - self.drone_pos.position.x
+        error_y = self.cmd_pos.position.y - self.drone_pos.position.y
+        error_z = self.cmd_pos.position.z - self.drone_pos.position.z
+
+        quaternion_cmd = (
+            self.cmd_pos.orientation.x,
+            self.cmd_pos.orientation.y,
+            self.cmd_pos.orientation.z,
+            self.cmd_pos.orientation.w
+        )
+
+        quaternion_drone = (
+            self.drone_pos.orientation.x,
+            self.drone_pos.orientation.y,
+            self.drone_pos.orientation.z,
+            self.drone_pos.orientation.w
+        )
+
+        yaw_cmd = tf.transformations.euler_from_quaternion(quaternion_cmd)
+        yaw_drone = tf.transformations.euler_from_quaternion(quaternion_drone)
+        error_yaw = yaw_cmd - yaw_drone
+
+        
+        return [error_x, error_y, error_z, error_yaw]
 
     def _is_topic(slef, topic_name):
-        # Get the list of published topics
         topics = rospy.get_published_topics()
 
-        # Check if the specified topic exists in the list
         for topic, topic_type in topics:
             if topic == topic_name:
                 return True
@@ -158,13 +192,20 @@ class GuiThread(threading.Thread):
 def main(args):
 
     flight_controller = FlightController()
-    
+    listener = tf.TransformListener()
+    drone_pose = Pose()
+
     rate = rospy.Rate(ROS_RATE)
 
     while not rospy.is_shutdown():
+        try:
+            (trans,rot) = listener.lookupTransform('map', '/drone', rospy.Time(0))
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            rospy.logerr("No transform found!")
+            continue
 
         t = rospy.get_time()
-        flight_controller.generate_cmd()
+        flight_controller.generate_cmd(trans, rot)
 
         rospy.loginfo("Command published!")
         rate.sleep()
