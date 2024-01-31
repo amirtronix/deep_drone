@@ -36,6 +36,7 @@ class PidController:
         self._ts = _sample_time
         self._sum = 0
         self._prev_error = 0
+        self._antiWindupActivation = _anti_windup
 
 
     def _setGains(self, _gains_list):
@@ -43,27 +44,41 @@ class PidController:
         self.gains.ki = _gains_list[1]
         self.gains.kd = _gains_list[2]
 
-    def _antiWindup(self):
-        pass
+    def _antiWindup(self, val):
+        if val > 50:
+            return 50
+        elif val < -50:
+            return -50
+        else:
+            return val
 
-    def _cmd_sat(self):
-        pass
+
+    def _cmd_sat(self, val):
+        if val > 100:
+            return 100
+        elif val < -100:
+            return -100
+        else:
+            return val
 
     def _integral(self, error):
         self._sum = self._sum + error*self._ts
-        return self._sum
+
+        if self._antiWindupActivation is None:
+            return self._sum
+        else:
+            return self._antiWindup(self._sum)
 
     def _derivateive(self, error):
-        derivative = (error*self._prev_error)/self._ts
+        derivative = (error-self._prev_error)/self._ts
         self._prev_error = error
-        return derivative
+        return 0
     
     def compute(self, error):
         _contorlSignal = self.gains.kp*error + \
             self.gains.ki*self._integral(error) + \
             self.gains.kd*self._derivateive(error)
-        
-        return _contorlSignal
+        return self._cmd_sat(_contorlSignal)
 
 class FlightController():
     def __init__(self):
@@ -74,7 +89,9 @@ class FlightController():
 
         self.sample_time = 1/ROS_RATE
 
-        self.gui_param = GuiThread()
+        self.gains = [[4200,62,3600], [2100,60,2200], [1650,1477,32], [4000,70,100]]
+
+        self.gui_param = GuiThread(self.gains)
         self.gui_param.start()
 
         self.cmd_zero = Twist()
@@ -82,25 +99,29 @@ class FlightController():
         self.cmd_pos = Pose()
         self.drone_pos = Pose()
 
-        self.gains = [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]
+        
 
-        self.pid_x = PidController(self.gains[0], self.sample_time)
-        self.pid_y = PidController(self.gains[1], self.sample_time)
-        self.pid_z = PidController(self.gains[2], self.sample_time)
-        self.pid_yaw = PidController(self.gains[3], self.sample_time)
+        self.pid_x = PidController(self.gains[0], self.sample_time, True)
+        self.pid_y = PidController(self.gains[1], self.sample_time, True)
+        self.pid_z = PidController(self.gains[2], self.sample_time, True)
+        self.pid_yaw = PidController(self.gains[3], self.sample_time, True)
 
     def generate_cmd(self, trans, rot):
         if self._is_topic("/drone/cmd_pos"):
-
             self._get_pos(trans, rot)
             errors = self._get_error()
 
+            self.gui_param.update_gains(self.pid_x.gains,
+                                        self.pid_y.gains,
+                                        self.pid_z.gains,
+                                        self.pid_yaw.gains)
+            
             self.cmd_vel.linear.x = self.pid_x.compute(errors[0])
-            self.cmd_vel.linear.y = self.pid_x.compute(errors[1])
-            self.cmd_vel.linear.z = self.pid_x.compute(errors[2])
-            self.cmd_vel.angular.z = self.pid_x.compute(errors[3])
+            self.cmd_vel.linear.y = self.pid_y.compute(errors[1])
+            self.cmd_vel.linear.z = self.pid_z.compute(errors[2])
+            self.cmd_vel.angular.z = self.pid_yaw.compute(errors[3])
 
-            self.cmd_pub.publish()
+            self.cmd_pub.publish(self.cmd_vel)
 
         else:
             self.cmd_pub.publish(self.cmd_zero)
@@ -138,11 +159,10 @@ class FlightController():
             self.drone_pos.orientation.w
         )
 
-        yaw_cmd = tf.transformations.euler_from_quaternion(quaternion_cmd)
-        yaw_drone = tf.transformations.euler_from_quaternion(quaternion_drone)
+        yaw_cmd = tf.transformations.euler_from_quaternion(quaternion_cmd)[2]
+        yaw_drone = tf.transformations.euler_from_quaternion(quaternion_drone)[2]
         error_yaw = yaw_cmd - yaw_drone
 
-        
         return [error_x, error_y, error_z, error_yaw]
 
     def _is_topic(slef, topic_name):
@@ -155,38 +175,67 @@ class FlightController():
         return False
 
 class GuiThread(threading.Thread):
-    def __init__(self, title = "PID GUI", max = 100):
+    def __init__(self, _init_gains, _title = "PID GUI", _max = 100):
         super(GuiThread, self).__init__()
 
-        self.title_window = title
-        self.max = max
+        self.title_window = _title
+        self.max = _max
+        self.init_gains = _init_gains
 
-        self.row_titles= ["kp (x)  ", "ki (x)  ", "kd (x)  ",
-                          "kp (y)  ", "ki (y)  ", "kd (y)  ",
-                          "kp (z)  ", "ki (z)  ", "kd (z)  ",
+        self.row_titles= ["kp (x)", "ki (x)", "kd (x)",
+                          "kp (y)", "ki (y)", "kd (y)",
+                          "kp (z)", "ki (z)", "kd (z)",
                           "kp (yaw)", "ki (yaw)", "kd (yaw)"]
         1
-        self.row_max = [100, 100, 100,
-                        100, 100, 100,
-                        100, 100, 100,
-                        100, 100, 100]
+        self.row_max = [10000, 100000, 10000,
+                        10000, 100000, 10000,
+                        10000, 100000, 10000,
+                        10000, 100000, 10000]
+        
+        self.kp_factor = 100
+        self.ki_factor = 1000
+        self.kd_factor = 100
 
 
-    def update_gains(self):
-        #TODO Update PID gains
-        pass
+    def update_gains(self, Gx: Gains, Gy: Gains, Gz: Gains, Gyaw: Gains):
+        Gx.kp = cv2.getTrackbarPos(self.row_titles[0], self.title_window)/self.kp_factor
+        Gx.ki = cv2.getTrackbarPos(self.row_titles[1], self.title_window)/self.ki_factor
+        Gx.kd = cv2.getTrackbarPos(self.row_titles[2], self.title_window)/self.kd_factor
+
+        Gy.kp = cv2.getTrackbarPos(self.row_titles[3], self.title_window)/self.kp_factor
+        Gy.ki = cv2.getTrackbarPos(self.row_titles[4], self.title_window)/self.ki_factor
+        Gy.kd = cv2.getTrackbarPos(self.row_titles[5], self.title_window)/self.kd_factor
+
+        Gz.kp = cv2.getTrackbarPos(self.row_titles[6], self.title_window)/self.kp_factor
+        Gz.ki = cv2.getTrackbarPos(self.row_titles[7], self.title_window)/self.ki_factor
+        Gz.kd = cv2.getTrackbarPos(self.row_titles[8], self.title_window)/self.kd_factor
+
+        Gyaw.kp = cv2.getTrackbarPos(self.row_titles[9], self.title_window)/self.kp_factor
+        Gyaw.ki = cv2.getTrackbarPos(self.row_titles[10], self.title_window)/self.ki_factor
+        Gyaw.kd = cv2.getTrackbarPos(self.row_titles[11], self.title_window)/self.kd_factor
+
 
     def run(self):
         cv2.namedWindow(self.title_window)
 
-        for trackbar_name, trackbar_max in zip(self.row_titles, self.row_max):
-            cv2.createTrackbar(trackbar_name, self.title_window , 0, trackbar_max, self.on_trackbar)
+        for index, (trackbar_name, trackbar_max) in enumerate(zip(self.row_titles, self.row_max)):
+            row_index = index // 4
+            col_index = index % 4
+            
+            cv2.createTrackbar(trackbar_name, 
+                               self.title_window , 
+                               self.init_gains[col_index][row_index], 
+                               trackbar_max, 
+                               self.on_trackbar)
 
         while not rospy.is_shutdown():
             cv2.waitKey(3)
             
     def on_trackbar(self, value):
         pass
+
+    def __del__(self):
+        cv2.destroyAllWindows()
 
 
 def main(args):
@@ -200,14 +249,16 @@ def main(args):
     while not rospy.is_shutdown():
         try:
             (trans,rot) = listener.lookupTransform('map', '/drone', rospy.Time(0))
+            t = rospy.get_time()
+            flight_controller.generate_cmd(trans, rot)
+
+            rospy.loginfo("Command published!")
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            rospy.logerr("No transform found!")
+            # rospy.logerr("No transform found!")
             continue
 
-        t = rospy.get_time()
-        flight_controller.generate_cmd(trans, rot)
 
-        rospy.loginfo("Command published!")
+
         rate.sleep()
 
     cv2.destroyAllWindows()
