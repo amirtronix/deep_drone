@@ -27,6 +27,15 @@ class DataAcquisition():
         pass
 
 
+
+    def saveCsv(self):
+        pass
+
+    def saveFrame(self):
+        pass
+
+    
+
 def main(args):
 
     data_acquisition = DataAcquisition()
