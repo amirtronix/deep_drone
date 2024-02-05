@@ -89,7 +89,8 @@ class FlightController():
 
         self.sample_time = 1/ROS_RATE
 
-        self.gains = [[4200,62,3600], [2100,60,2200], [1650,1477,32], [4000,70,100]]
+        # self.gains = [[4200,62,3600], [2100,60,2200], [1650,1477,32], [4000,70,100]]
+        self.gains = [[0,0,0], [0,0,0], [1650,1477,32], [0,0,0]]
 
         self.gui_param = GuiThread(self.gains)
         self.gui_param.start()
@@ -219,12 +220,14 @@ class GuiThread(threading.Thread):
         cv2.namedWindow(self.title_window)
 
         for index, (trackbar_name, trackbar_max) in enumerate(zip(self.row_titles, self.row_max)):
-            row_index = index // 4
-            col_index = index % 4
+            row_index = index // 3
+            col_index = index % 3
+
+            print(col_index, row_index)
             
             cv2.createTrackbar(trackbar_name, 
                                self.title_window , 
-                               self.init_gains[col_index][row_index], 
+                               self.init_gains[row_index][col_index], 
                                trackbar_max, 
                                self.on_trackbar)
 
@@ -248,7 +251,7 @@ def main(args):
 
     while not rospy.is_shutdown():
         try:
-            (trans,rot) = listener.lookupTransform('map', '/drone', rospy.Time(0))
+            (trans,rot) = listener.lookupTransform('map', '/vicon/parrot/parrot', rospy.Time(0))
             t = rospy.get_time()
             flight_controller.generate_cmd(trans, rot)
 
