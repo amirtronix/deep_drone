@@ -13,7 +13,7 @@ import turtlesim.msg
 import pysphinx
 
 rospack = rospkg.RosPack()
-config_path = rospack.get_path('deep_ros') + '/config/param.yaml'
+config_path = rospack.get_path('deep_drone') + '/config/param.yaml'
 
 print(config_path)
 
