@@ -222,6 +222,11 @@ Make sure parrot environment is activated:
 source ~/parrot/bin/activate
 ```
 
+** pip install rospkg
+pip install opencv-python
+add them to requirements 
+
+
 Now clone and install yolov5:
 
 
