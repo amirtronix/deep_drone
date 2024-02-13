@@ -29,7 +29,7 @@
 		/>
 	</node>
 	
-	<node 
+	<!-- <node 
 		pkg="deep_ros"
 		type="sp_broadcaster.py" 
 		name="sphinx_broadcaster_truck" 
@@ -41,6 +41,6 @@
 				value="truck" 
 				type="str" 
 		/>
-	</node>
+	</node> -->
 
 </launch>
