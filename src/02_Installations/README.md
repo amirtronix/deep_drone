@@ -207,6 +207,13 @@ Now simply run roscore in a terminal to run ROS:
 roscore
 ```
 
+## Python Requirements
+
+```
+pip install -r requirements.txt
+```
+
+
 ## PyTorch and Yolov5
 
 There are several neural networks libraries out there, most prominently PyTorch and Tensorflow. These libraries provide you with the necessary tools for developing neural networks from scratch. However, developing an optimised acrhictecture from scratch takes time and is a painstaking task, so instead of developing the architecture ourselves, we can simply use fine-tuned networks. Yolov5 is one of the fastest object detection models which is based on Torch. Therefore, PyTorch 1.8 is already in the requirements of Yolov5 which is also compatible with CUDA 11.1 as well. To do so, make a new folder first:
@@ -221,10 +228,6 @@ Make sure parrot environment is activated:
 ```
 source ~/parrot/bin/activate
 ```
-
-** pip install rospkg
-pip install opencv-python
-add them to requirements 
 
 
 Now clone and install yolov5:
