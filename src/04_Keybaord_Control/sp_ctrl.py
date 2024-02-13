@@ -1,10 +1,9 @@
-#!/home/username/parrot/bin/python
+#!/home/amirtronics/parrot/bin/python
 
 from __future__ import print_function
 
 import threading
 
-import roslib; roslib.load_manifest('teleop_twist_keyboard')
 import rospy
 
 from geometry_msgs.msg import Twist
