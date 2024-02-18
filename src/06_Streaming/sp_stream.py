@@ -1,4 +1,4 @@
-#!/home/username/parrot/bin/python
+#!/home/amirtronics/parrot/bin/python
 
 import sys
 import rospy
@@ -13,7 +13,7 @@ from cv_bridge import CvBridge
 import cv2
 
 rospack = rospkg.RosPack()
-config_path = rospack.get_path('deep_ros') + '/config/param.yaml'
+config_path = rospack.get_path('deep_drone') + '/config/param.yaml'
 
 print(config_path)
 
@@ -59,7 +59,7 @@ class VideoStream():
             else:
                 print(f"Directory '{self.frame_path}' already exists.")
                 
-            self.frame_count = 0
+        self.frame_count = 0
 
     def image_callback(self, msg):
         try:
@@ -68,8 +68,8 @@ class VideoStream():
             print(e)
             return
         
-        # cv2.imshow("Image Subscriber", self.cv_image)
-        # cv2.waitKey(1)
+        cv2.imshow("Image Subscriber", self.cv_image)
+        cv2.waitKey(1)
 
         if self.save_video:
             self.saveVideo()
@@ -101,7 +101,7 @@ class VideoStream():
 
 
 def main(args):
-    video_Stream = VideoStream(save_video= True, save_frame=True)
+    video_Stream = VideoStream(save_video= False, save_frame=False)
 
     try:
         rospy.spin()
