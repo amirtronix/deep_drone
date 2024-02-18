@@ -1,4 +1,4 @@
-#!/home/amirtronics/parrot/bin/python
+#!/home/username/parrot/bin/python
 
 from __future__ import print_function
 
