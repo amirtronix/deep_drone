@@ -17,7 +17,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 rospack = rospkg.RosPack()
-config_path = rospack.get_path('deep_ros') + '/config/param.yaml'
+config_path = rospack.get_path('deep_drone') + '/config/param.yaml'
 
 print(config_path)
 
@@ -35,9 +35,10 @@ class Detector():
     def __init__(self, save_video=False, save_frame=False):
         rospy.init_node('sphinx_stream_node')
         
-        self.image_pub = rospy.Publisher("/parrot/image_annotated",Image, queue_size=10)
+        self.image_pub = rospy.Publisher("/drone/image_annotated",Image, queue_size=10)
 
         self.model_yolo = torch.hub.load('ultralytics/yolov5', 'yolov5m')
+        # torch.save(self.model_yolo.state_dict(), '/home/amirtronics/catkin_ws/src/deep_drone/yolov5x_model_state.pt')
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber(CAMERA_TOPIC, Image, self.image_callback)
         self.save_video = save_video
@@ -51,7 +52,8 @@ class Detector():
 
     def image_callback(self, msg):
         try:
-            self.cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+            img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+            self.cv_image = cv2.resize(img, (0,0), fx=0.75, fy=0.75)
         except Exception as e:
             print(e)
             return
